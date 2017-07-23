@@ -14,10 +14,13 @@
 
 #include "F2837xD_sci_io.h"
 
+#include "inc/device/led.h"
 #include "inc/device/spi.h"
 #include "inc/device/adc.h"
 #include "inc/device/key.h"
 #include "inc/device/eqep.h"
+#include "inc/device/ecap.h"
+#include "inc/device/cpu_timer.h"
 
 #include "inc/driver/ssd1351.h"
 
@@ -26,10 +29,15 @@ volatile FILE *scia_fid;
 
 void device_init(void)
 {
+    led_init();
     spi_init();         // SPI总线配置
-    adc_init();         // ADC配置
     key_init();         // 按键配置
+    adc1_init();        // ADC配置
     eqep1_init();       // eQEP配置
+//    eqep3_init();       // eQEP配置
+//    ecap1_init();       // eQEP配置
+//    ecap2_init();       // eQEP配置
+    cpu_timer_init();
 }
 
 void driver_init(void)
@@ -63,6 +71,5 @@ void system_init(void)
 
 void system_suspend(void)
 {
-    // 采样周期为1s，连续工作不休眠
-//    DEVICE_DELAY_US(100000000);
+    DEVICE_DELAY_US(50000);
 }

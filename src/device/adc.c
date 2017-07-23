@@ -6,6 +6,8 @@
  */
 #include "driverlib.h"
 #include "device.h"
+
+#include "fpu_vector.h"
 //
 // Defines
 //
@@ -17,13 +19,14 @@
 // Globals
 //
 //int16_t
-uint16_t adcAResults[RESULTS_BUFFER_SIZE];   // Buffer for results
+//uint16_t adcAResults[RESULTS_BUFFER_SIZE];   // Buffer for results
 
-#pragma DATA_SECTION(adcAResultsSig,"buffer1")
-int16_t adcAResultsSig[RESULTS_BUFFER_SIZE];   // Buffer for results
+//#pragma DATA_SECTION(adcAResultsSig,"buffer1")
+int16_t adcAResults[RESULTS_BUFFER_SIZE];   // Buffer for results
 
 uint16_t index;                              // Index into result buffer
-volatile uint16_t bufferFull;                // Flag to indicate buffer is full
+volatile uint16_t adc1_ready;                // Flag to indicate buffer is full
+volatile uint16_t adc1_buffer_read;
 //
 // Function Prototypes
 //
@@ -35,9 +38,8 @@ __interrupt void adcD1ISR(void);
 //
 // Main
 //
-void adc_init(void)
+void adc1_init(void)
 {
-
     Interrupt_register(INT_ADCD1, &adcD1ISR);
 
     //
@@ -50,13 +52,14 @@ void adc_init(void)
     //
     // Initialize results buffer
     //
-    for(index = 0; index < RESULTS_BUFFER_SIZE; index++)
-    {
+    for (index = 0; index < RESULTS_BUFFER_SIZE; index++) {
+//        adcAResults[index] = 0;
         adcAResults[index] = 0;
     }
 
     index = 0;
-    bufferFull = 0;
+    adc1_ready = 1;
+    adc1_buffer_read = 1;
 
     //
     // Enable ADC interrupt
@@ -65,28 +68,18 @@ void adc_init(void)
 }
 
 
-void adc_start(void)
+void adc1_start(void)
 {
-    //
-    // Start ePWM1, enabling SOCA and putting the counter in up-count mode
-    //
-    EPWM_enableADCTrigger(EPWM1_BASE, EPWM_SOC_A);
-    EPWM_setTimeBaseCounterMode(EPWM1_BASE, EPWM_COUNTER_MODE_UP);
-
-    //
-    // Wait while ePWM1 causes ADC conversions which then cause interrupts.
-    // When the results buffer is filled, the bufferFull flag will be set.
-    //
-    while(bufferFull == 0)
-    {
+    if (adc1_ready != 1) {
+        return;
+    } else {
+        adc1_ready = 0;
+        //
+        // Start ePWM1, enabling SOCA and putting the counter in up-count mode
+        //
+        EPWM_enableADCTrigger(EPWM1_BASE, EPWM_SOC_A);
+        EPWM_setTimeBaseCounterMode(EPWM1_BASE, EPWM_COUNTER_MODE_UP);
     }
-    bufferFull = 0;     // Clear the buffer full flag
-
-    //
-    // Stop ePWM1, disabling SOCA and freezing the counter
-    //
-    EPWM_disableADCTrigger(EPWM1_BASE, EPWM_SOC_A);
-    EPWM_setTimeBaseCounterMode(EPWM1_BASE, EPWM_COUNTER_MODE_STOP_FREEZE);
 }
 
 //
@@ -181,18 +174,29 @@ void initADCSOC(void)
 //
 __interrupt void adcD1ISR(void)
 {
+    extern int16_t adc1_buffer_sample[RESULTS_BUFFER_SIZE];
     //
     // Add the latest result to the buffer
     //
-    adcAResults[index++] = ADC_readResult(ADCDRESULT_BASE, ADC_SOC_NUMBER0);
-    adcAResultsSig[index++] = ADC_readResult(ADCDRESULT_BASE, ADC_SOC_NUMBER0) - 32768;
+//    adcAResults[index++] = ADC_readResult(ADCDRESULT_BASE, ADC_SOC_NUMBER0);
+    adcAResults[index] = ADC_readResult(ADCDRESULT_BASE, ADC_SOC_NUMBER0) - 32768;
+    index += 2;
     //
     // Set the bufferFull flag if the buffer is full
     //
-    if(RESULTS_BUFFER_SIZE <= index)
-    {
+    if (RESULTS_BUFFER_SIZE <= index) {
         index = 0;
-        bufferFull = 1;
+        //
+        // Stop ePWM1, disabling SOCA and freezing the counter
+        //
+        EPWM_disableADCTrigger(EPWM1_BASE, EPWM_SOC_A);
+        EPWM_setTimeBaseCounterMode(EPWM1_BASE, EPWM_COUNTER_MODE_STOP_FREEZE);
+
+        if (adc1_buffer_read == 1) {
+            adc1_buffer_read = 0;
+            memcpy_fast(adc1_buffer_sample, adcAResults, sizeof(adc1_buffer_sample));
+        }
+        adc1_ready = 1;
     }
 
     //
