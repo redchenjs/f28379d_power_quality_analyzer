@@ -11,60 +11,74 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <inc/system/fonts.h>
-#include <inc/driver/ssd1351.h>
+#include "inc/system/fonts.h"
+#include "inc/driver/ssd1351.h"
 
-#define MENU_ITEM_NUM   4
+#include "inc/tasks/task_disp.h"
 
 uint16_t disp_menu_index  = 0;
 uint16_t disp_menu_level = 0;
 uint16_t disp_menu_refresh = 0;
 
-void disp_adc1_vrms(void)
+void disp_adc1_voltage(void)
 {
+    extern double adc1_voltage_vpp;
+    extern double adc1_voltage_ave;
+    extern double adc1_voltage_rms;
 
+    ssd1351_display_num(16, 0, (long)(adc1_voltage_vpp*1e3), 5, FONT_3216, Magenta, Black);
+    ssd1351_display_num(16, 32, (long)(adc1_voltage_ave*1e3), 5, FONT_3216, Lime, Black);
+    ssd1351_display_num(16, 64, (long)(adc1_voltage_rms*1e3), 5, FONT_3216, Yellow, Black);
 }
 
 void disp_adc1_spectrum(void)
 {
-    extern double adc1_spectrum_amp[128];
-    int i;
+    extern double adc1_spectrum_abs[512];
+    uint16_t i;
 
     ssd1351_display_num(80, 0, 0, 3, FONT_1616, Yellow, Blue);
 
-    for (i=0; i<80; i++) {
-        if ((uint32_t)(adc1_spectrum_amp[i]*1e3) > 128) {
-            ssd1351_draw_column(i, 0, 128, Black, White);
+    if (adc1_spectrum_abs[0] < 0) {
+        ssd1351_draw_column(0, 0, 128, Black, White);
+    } else if ((uint32_t)(adc1_spectrum_abs[0]*1e3) > 128) {
+        ssd1351_draw_column(0, 0, 0, Black, White);
+    } else {
+        ssd1351_draw_column(0, 0, 128-(uint32_t)(adc1_spectrum_abs[0]*1e3), Black, White);
+    }
+
+    for (i=1; i<80; i++) {
+        if ((uint32_t)(adc1_spectrum_abs[i]*1e3) > 128) {
+            ssd1351_draw_column(i, 0, 0, Black, White);
         } else {
-            ssd1351_draw_column(i, 0, 128-(uint32_t)(adc1_spectrum_amp[i]*1e3), Black, White);
+            ssd1351_draw_column(i, 0, 128-(uint32_t)(adc1_spectrum_abs[i]*1e3), Black, White);
         }
     }
     for (i=80; i<128; i++) {
-        if ((uint32_t)(adc1_spectrum_amp[i]*1e3) > 128-16) {
+        if ((uint32_t)(adc1_spectrum_abs[i]*1e3) > (128-16)) {
             ssd1351_draw_column(i, 16, 128-16, Black, White);
         } else {
-            ssd1351_draw_column(i, 16, 128-(uint32_t)(adc1_spectrum_amp[i]*1e3)-16, Black, White);
+            ssd1351_draw_column(i, 16, 128-(uint32_t)(adc1_spectrum_abs[i]*1e3)-16, Black, White);
         }
     }
 }
 
 void disp_adc1_harmonic(void)
 {
-    extern double adc1_harmonic_amp[10];
+    extern double adc1_harmonic_rms[10];
     extern double adc1_harmonic_percent[10];
     extern uint16_t adc1_first_harmonic_index;
 
     int i;
-    char str_disp[10][24] = {0};
+    char str_disp[24] = {0};
     const int str_fore_color[10] = {Magenta, White, White, White, White, White, White, White, White, White};
     const int str_back_color[10] = {Black, Black, Black, Black, Black, Black, Black, Black, Black, Black};
 
-    snprintf(str_disp[0], 24, "DC%7ld.%01lumV%5lu.%01lu%%", (int32_t)floor(adc1_harmonic_amp[0] * 1e3), (uint32_t)(floor(adc1_harmonic_amp[0] * 1e4 - floor(adc1_harmonic_amp[0] * 1e3) * 1e1)), (uint32_t)floor(adc1_harmonic_percent[0]), (uint32_t)(floor(adc1_harmonic_percent[0] * 1e1 - floor(adc1_harmonic_percent[0]) * 1e1)));
-    ssd1351_display_string(0, 2, str_disp[0], FONT_1206, str_fore_color[0], str_back_color[0]);
+    snprintf(str_disp, 24, "DC%7ld.%01lumV%5lu.%01lu%%", (int32_t)floor(adc1_harmonic_rms[0] * 1e6), (uint32_t)(floor(adc1_harmonic_rms[0] * 1e7 - floor(adc1_harmonic_rms[0] * 1e6) * 1e1)), (uint32_t)floor(adc1_harmonic_percent[0]), (uint32_t)(floor(adc1_harmonic_percent[0] * 1e1 - floor(adc1_harmonic_percent[0]) * 1e1)));
+    ssd1351_display_string(0, 2, str_disp, FONT_1206, str_fore_color[0], str_back_color[0]);
 
     for (i=1; i<10; i++) {
-        snprintf(str_disp[i], 24, "No.%d%5lu.%01lumV%5lu.%01lu%%", i, (uint32_t)floor(adc1_harmonic_amp[i] * 1e3), (uint32_t)(floor(adc1_harmonic_amp[i] * 1e4 - floor(adc1_harmonic_amp[i] * 1e3) * 1e1)), (uint32_t)floor(adc1_harmonic_percent[i]), (uint32_t)(floor(adc1_harmonic_percent[i] * 1e1 - floor(adc1_harmonic_percent[i]) * 1e1)));
-        ssd1351_display_string(0, 16+(i-1)*12, str_disp[i], FONT_1206, str_fore_color[i], str_back_color[i]);
+        snprintf(str_disp, 24, "No.%d%5lu.%01lumV%5lu.%01lu%%", i, (uint32_t)floor(adc1_harmonic_rms[i] * 1e6), (uint32_t)(floor(adc1_harmonic_rms[i] * 1e7 - floor(adc1_harmonic_rms[i] * 1e6) * 1e1)), (uint32_t)floor(adc1_harmonic_percent[i]), (uint32_t)(floor(adc1_harmonic_percent[i] * 1e1 - floor(adc1_harmonic_percent[i]) * 1e1)));
+        ssd1351_display_string(0, 16+(i-1)*12, str_disp, FONT_1206, str_fore_color[i], str_back_color[i]);
     }
 }
 
@@ -215,13 +229,6 @@ void disp_menu(void)
     extern uint32_t eqep1_position;
     extern uint32_t eqep2_position;
 
-    enum menu_item {
-        MENU_ITEM_VOLTAGE   = 0x0,
-        MENU_ITEM_SPECTRUM  = 0x1,
-        MENU_ITEM_HARMONIC  = 0x2,
-        MENU_ITEM_FREQUENCY = 0x3
-    };
-
     const char str_menu_id[MENU_ITEM_NUM][24] = {
                                        "Voltage      ",
                                        "Spectrum     ",
@@ -257,7 +264,7 @@ void disp_menu(void)
         case 1:
             switch (disp_menu_index) {
                 case MENU_ITEM_VOLTAGE:
-                    disp_adc1_vrms();
+                    disp_adc1_voltage();
                     break;
                 case MENU_ITEM_SPECTRUM:
                     disp_adc1_spectrum();
@@ -279,8 +286,8 @@ void disp_menu(void)
 
 interrupt void xint1_isr(void)
 {
-    if (disp_menu_level == 0) {
-        disp_menu_level = 1;
+    if (disp_menu_level == MENU_LEVEL_1) {
+        disp_menu_level = MENU_LEVEL_2;
         disp_menu_refresh = 1;
     }
 
@@ -289,8 +296,8 @@ interrupt void xint1_isr(void)
 
 interrupt void xint2_isr(void)
 {
-    if (disp_menu_level == 1) {
-        disp_menu_level = 0;
+    if (disp_menu_level == MENU_LEVEL_2) {
+        disp_menu_level = MENU_LEVEL_1;
         disp_menu_refresh = 1;
     }
 

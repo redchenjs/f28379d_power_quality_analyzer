@@ -71,5 +71,5 @@ void system_init(void)
 
 void system_suspend(void)
 {
-    DEVICE_DELAY_US(50000);
+    DEVICE_DELAY_US(10000);
 }
