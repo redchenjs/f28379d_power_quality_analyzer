@@ -34,9 +34,9 @@ void device_init(void)
     key_init();         // 按键配置
     adc1_init();        // ADC配置
     eqep1_init();       // eQEP配置
-//    eqep3_init();       // eQEP配置
-//    ecap1_init();       // eQEP配置
-//    ecap2_init();       // eQEP配置
+    eqep3_init();       // eQEP配置
+    ecap1_init();       // eQEP配置
+    ecap2_init();       // eQEP配置
     cpu_timer_init();
 }
 
@@ -71,5 +71,5 @@ void system_init(void)
 
 void system_suspend(void)
 {
-    DEVICE_DELAY_US(10000);
+    DEVICE_DELAY_US(1000);
 }

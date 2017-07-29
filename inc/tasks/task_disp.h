@@ -8,20 +8,22 @@
 #ifndef INC_TASKS_TASK_DISP_H_
 #define INC_TASKS_TASK_DISP_H_
 
-#define MENU_ITEM_NUM   4
+extern void disp_adc1_voltage(void);
+extern void disp_adc1_spectrum(void);
+extern void disp_adc1_harmonic(void);
 
-enum menu_level {
-    MENU_LEVEL_1   = 0x0,
-    MENU_LEVEL_2   = 0x1
-};
+extern void disp_adc2_current(void);
+extern void disp_adc2_spectrum(void);
+extern void disp_adc2_harmonic(void);
 
-enum menu_item {
-    MENU_ITEM_VOLTAGE   = 0x0,
-    MENU_ITEM_SPECTRUM  = 0x1,
-    MENU_ITEM_HARMONIC  = 0x2,
-    MENU_ITEM_FREQUENCY = 0x3
-};
+extern void disp_adc1_2_power(void);
 
-extern void task_disp(void);
+extern void disp_ecap1_frequency(void);
+extern void disp_ecap2_phase(void);
+
+extern void disp_time(void);
+extern void disp_menu(void);
+
+extern void disp_refresh(void);
 
 #endif /* INC_TASKS_TASK_DISP_H_ */

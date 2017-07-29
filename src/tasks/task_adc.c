@@ -19,9 +19,9 @@
 #include "inc/device/adc.h"
 #include "inc/tasks/task_disp.h"
 
-double adc1_voltage_vpp  = 0.0;
-double adc1_voltage_ave  = 0.0;
-double adc1_voltage_rms  = 0.0;
+double adc1_voltage_peak  = 0.0;
+double adc1_voltage_ave   = 0.0;
+double adc1_voltage_rms   = 0.0;
 
 double adc1_spectrum_abs[512]   = {0.0};
 double adc1_spectrum_phase[512] = {0.0};
@@ -30,6 +30,23 @@ double adc1_harmonic_abs[10] = {0.0};
 double adc1_harmonic_amp[10] = {0.0};
 double adc1_harmonic_rms[10] = {0.0};
 double adc1_harmonic_percent[10] = {0.0};
+
+double adc2_current_peak  = 0.0;
+double adc2_current_ave   = 0.0;
+double adc2_current_rms   = 0.0;
+
+double adc2_spectrum_abs[512]   = {0.0};
+double adc2_spectrum_phase[512] = {0.0};
+
+double adc2_harmonic_abs[10] = {0.0};
+double adc2_harmonic_amp[10] = {0.0};
+double adc2_harmonic_rms[10] = {0.0};
+double adc2_harmonic_percent[10] = {0.0};
+
+double adc1_2_apparent_power = 0.0;
+double adc1_2_active_power   = 0.0;
+double adc1_2_reactive_power = 0.0;
+double adc1_2_power_factor   = 0.0;
 
 uint16_t adc1_first_harmonic_index = 0;
 
@@ -60,7 +77,7 @@ void adc1_fft(void)
 //        CFFT_unpack(handleCFFT);
 }
 
-void adc1_voltage(void)
+void adc1_voltage_caculate(void)
 {
     extern int16_t adc1_buffer_sample[2048];
 
@@ -84,8 +101,8 @@ void adc1_voltage(void)
         adc1_voltage_rms += pow(adc1_buffer_sample[i], 2);
     }
 
-    adc1_voltage_vpp = adc1_buffer_sample[vp_max] - adc1_buffer_sample[vp_min];
-    adc1_voltage_vpp = 3.0 * (2.0 * (adc1_voltage_vpp + 32768) / 65536.0 - 1.0);
+    adc1_voltage_peak = adc1_buffer_sample[vp_max] - adc1_buffer_sample[vp_min];
+    adc1_voltage_peak = 3.0 * (2.0 * (adc1_voltage_peak + 32768) / 65536.0 - 1.0);
 
     adc1_voltage_ave = adc1_voltage_ave / (uint16_t)(1024/adc1_first_harmonic_index);
     adc1_voltage_ave = 3.0 * (2.0 * (adc1_voltage_ave + 32768) / 65536.0 - 1.0);
@@ -95,12 +112,12 @@ void adc1_voltage(void)
     adc1_voltage_rms = 3.0 * (2.0 * (adc1_voltage_rms + 32768) / 65536.0 - 1.0);
 }
 
-void adc2_voltage(void)
+void adc2_voltage_caculate(void)
 {
 
 }
 
-void adc1_spectrum(void)
+void adc1_spectrum_caculate(void)
 {
     extern int16_t adc1_buffer_fft[2048];
 
@@ -115,7 +132,7 @@ void adc1_spectrum(void)
     adc1_spectrum_phase[0] = 0.0;
 }
 
-void adc1_harmonic(void)
+void adc1_harmonic_caculate(void)
 {
     uint16_t i;
 
@@ -157,36 +174,46 @@ void adc1_harmonic(void)
     }
 }
 
-void task_adc(void)
+void adc1_phase_caculate(void)
 {
-    extern volatile uint16_t adc1_buffer_read;
-    extern uint16_t disp_menu_index;
-    extern uint16_t disp_menu_level;
+    uint16_t i;
 
-    adc1_start();
-
-    if (adc1_buffer_read == 0 && disp_menu_level == MENU_LEVEL_2) {
-        adc1_buffer_read = 1;
-
-        switch (disp_menu_index) {
-            case MENU_ITEM_VOLTAGE:
-                adc1_fft();
-                adc1_spectrum();
-                adc1_voltage();
-                break;
-            case MENU_ITEM_SPECTRUM:
-                adc1_fft();
-                adc1_spectrum();
-                break;
-            case MENU_ITEM_HARMONIC:
-                adc1_fft();
-                adc1_spectrum();
-                adc1_harmonic();
-                break;
-            case MENU_ITEM_FREQUENCY:
-                break;
-            default:
-                break;
+    for (i=0; i<512; i++) {
+        if (adc1_spectrum_abs[adc1_first_harmonic_index] < adc1_spectrum_abs[i]) {
+            adc1_first_harmonic_index = i;
         }
     }
+
+    if (adc1_first_harmonic_index == 0) {
+
+    } else {
+
+    }
+}
+
+void adc2_phase_caculate(void)
+{
+    uint16_t i;
+
+    for (i=0; i<512; i++) {
+        if (adc1_spectrum_abs[adc1_first_harmonic_index] < adc1_spectrum_abs[i]) {
+            adc1_first_harmonic_index = i;
+        }
+    }
+
+    if (adc1_first_harmonic_index == 0) {
+
+    } else {
+
+    }
+}
+
+void adc1_2_power_caculate(void)
+{
+    extern double ecap2_phase_radian;
+
+    adc1_2_apparent_power = adc1_voltage_rms * adc2_current_rms;
+    adc1_2_active_power   = adc1_2_apparent_power * cos(ecap2_phase_radian);
+    adc1_2_reactive_power = adc1_2_apparent_power * sin(ecap2_phase_radian);
+    adc1_2_power_factor   = acos(ecap2_phase_radian);
 }

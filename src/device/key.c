@@ -20,6 +20,10 @@ void key_init(void)
     Interrupt_enable(INT_XINT1);
     Interrupt_enable(INT_XINT2);
 
+    GPIO_setPinConfig(GPIO_99_GPIO99);
+    GPIO_setPinConfig(GPIO_57_GPIO57);
+    GPIO_setPadConfig(99, GPIO_PIN_TYPE_STD);
+    GPIO_setPadConfig(57, GPIO_PIN_TYPE_STD);
     GPIO_setDirectionMode(99, GPIO_DIR_MODE_IN);
     GPIO_setDirectionMode(57, GPIO_DIR_MODE_IN);
     GPIO_setQualificationMode(99, GPIO_QUAL_6SAMPLE);

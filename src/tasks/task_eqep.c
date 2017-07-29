@@ -14,7 +14,7 @@ uint32_t eqep2_position = 0;
 
 double eqep3_freq = 0;
 
-void eqep1_rotary_encoder(void)
+void eqep1_position_caculate(void)
 {
     if (EQEP_getPosition(EQEP1_BASE) > 384 && EQEP_getPosition(EQEP1_BASE) < 32768) {
         EQEP_setPosition(EQEP1_BASE, 384);
@@ -25,7 +25,7 @@ void eqep1_rotary_encoder(void)
     eqep1_position = EQEP_getPosition(EQEP1_BASE) / 2;
 }
 
-void eqep2_rotary_encoder(void)
+void eqep2_position_caculate(void)
 {
     if (EQEP_getPosition(EQEP2_BASE) > 384 && EQEP_getPosition(EQEP2_BASE) < 32768) {
         EQEP_setPosition(EQEP2_BASE, 384);
@@ -36,7 +36,7 @@ void eqep2_rotary_encoder(void)
     eqep2_position = EQEP_getPosition(EQEP2_BASE) / 2;
 }
 
-void eqep3_freq_caculate(void)
+void eqep3_frequency_caculate(void)
 {
     extern uint32_t eqep3IntCount;
 
@@ -49,10 +49,3 @@ void eqep3_freq_caculate(void)
         EQEP_clearInterruptStatus(EQEP3_BASE, EQEP_INT_UNIT_TIME_OUT);
     }
 }
-
-void task_eqep(void)
-{
-    eqep1_rotary_encoder();
-//    eqep3_freq_caculate();
-}
-
