@@ -80,64 +80,49 @@ void disp_ecap1_frequency(void)
 
     if (ecap1_freq < 0.050) {
         // below 50 mHz
-        snprintf(str_freq, 20, "  none  ");
+        snprintf(str_freq, 20, "  <50.0 mHz ");
         // below 50 mHz
-        snprintf(str_duty, 20, "  none  ");
+        snprintf(str_duty, 20, "----------");
     } else if (ecap1_freq < 0.1000) {
         // 50.000 mHz(0.002%) ~ 99.999 mHz(0.001%)
-        snprintf(str_freq, 20, "%4lu.%03lu", (uint32_t)floor(ecap1_freq * 1e3), (uint32_t)(round(ecap1_freq * 1e6) - floor(ecap1_freq * 1e3) * 1e3));
+        snprintf(str_freq, 20, "%8.3f mHz", round(ecap1_freq * 1e6) / 1e3);
         // 1.000 %(0.1%) ~ 99.999%(0.001%)
-        snprintf(str_duty, 20, "%4lu.%03lu", (uint32_t)floor(ecap1_duty), (uint32_t)(round(ecap1_duty * 1e3) - floor(ecap1_duty) * 1e3));
+        snprintf(str_duty, 20, "%8.2f %%", round(ecap1_duty * 1e2) / 1e2);
     } else if (ecap1_freq < 1.0000) {
         // 100.000 mHz(0.001%) ~ 999.999 mHz(0.0001%)
-        snprintf(str_freq, 20, "%4lu.%03lu", (uint32_t)floor(ecap1_freq * 1e3), (uint32_t)(round(ecap1_freq * 1e6) - floor(ecap1_freq * 1e3) * 1e3));
+        snprintf(str_freq, 20, "%8.3f mHz", round(ecap1_freq * 1e6) / 1e3);
         // 1.000 %(0.1%) ~ 99.999%(0.001%)
-        snprintf(str_duty, 20, "%4lu.%03lu", (uint32_t)floor(ecap1_duty), (uint32_t)(round(ecap1_duty * 1e3) - floor(ecap1_duty) * 1e3));
+        snprintf(str_duty, 20, "%8.2f %%", round(ecap1_duty * 1e2) / 1e2);
     } else if (ecap1_freq < 10.000) {
         // 1.000000 Hz(0.0001%) ~ 9.999999 Hz(0.00001%)
-        snprintf(str_freq, 20, "%1lu.%06lu", (uint32_t)floor(ecap1_freq), (uint32_t)(round(ecap1_freq * 1e6) - floor(ecap1_freq) * 1e6));
+        snprintf(str_freq, 20, "%9.6f Hz", round(ecap1_freq * 1e6) / 1e6);
         // 1.000 %(0.1%) ~ 99.999%(0.001%)
-        snprintf(str_duty, 20, "%4lu.%03lu", (uint32_t)floor(ecap1_duty), (uint32_t)(round(ecap1_duty * 1e3) - floor(ecap1_duty) * 1e3));
+        snprintf(str_duty, 20, "%8.2f %%", round(ecap1_duty * 1e2) / 1e2);
     } else if (ecap1_freq < 100.000) {
         // 10.0000 Hz(0.001%) ~ 99.9999 Hz(0.0001%)
-        snprintf(str_freq, 20, "%3lu.%04lu", (uint32_t)floor(ecap1_freq), (uint32_t)(round(ecap1_freq * 1e4) - floor(ecap1_freq) * 1e4));
+        snprintf(str_freq, 20, "%9.5f Hz", round(ecap1_freq * 1e5) / 1e5);
         // 1.000 %(0.1%) ~ 99.999%(0.001%)
-        snprintf(str_duty, 20, "%4lu.%03lu", (uint32_t)floor(ecap1_duty), (uint32_t)(round(ecap1_duty * 1e3) - floor(ecap1_duty) * 1e3));
+        snprintf(str_duty, 20, "%8.2f %%", round(ecap1_duty * 1e2) / 1e2);
     } else if (ecap1_freq < 1000.00) {
         // 100.00 Hz(0.01%) ~ 999.99 Hz(0.001%)
-        snprintf(str_freq, 20, "%5lu.%02lu", (uint32_t)floor(ecap1_freq), (uint32_t)(round(ecap1_freq * 1e2) - floor(ecap1_freq) * 1e2));
+        snprintf(str_freq, 20, "%9.3f Hz", round(ecap1_freq * 1e3) / 1e3);
         // 1.000 %(0.1%) ~ 99.999%(0.001%)
-        snprintf(str_duty, 20, "%4lu.%03lu", (uint32_t)floor(ecap1_duty), (uint32_t)(round(ecap1_duty * 1e3) - floor(ecap1_duty) * 1e3));
+        snprintf(str_duty, 20, "%8.2f %%", round(ecap1_duty * 1e2) / 1e2);
     } else if (ecap1_freq < 10000.0) {
         // 1.000 kHz(0.1%) ~ 9.999 kHz(0.01%)
-        snprintf(str_freq, 20, "%4lu.%03lu", (uint32_t)floor(ecap1_freq * 1e-3), (uint32_t)(round(ecap1_freq) - floor(ecap1_freq * 1e-3) * 1e3));
+        snprintf(str_freq, 20, "%8.3f kHz", round(ecap1_freq) / 1e3);
         // 1.00 %(1%) ~ 99.99%(0.01%)
-        snprintf(str_duty, 20, "%5lu.%02lu", (uint32_t)floor(ecap1_duty), (uint32_t)(round(ecap1_duty * 1e2) - floor(ecap1_duty) * 1e2));
-    } else if (ecap1_freq < 100000.0) {
-        // 10.0 kHz(1%) ~ 99.9 kHz(0.1%)
-        snprintf(str_freq, 20, "%6lu.%01lu", (uint32_t)floor(ecap1_freq * 1e-3), (uint32_t)(round(ecap1_freq * 1e-2) - floor(ecap1_freq * 1e-3) * 1e1));
-        // 1.0 %(10%) ~ 99.9 %(0.1%)
-        snprintf(str_duty, 20, "%6lu.%01lu", (uint32_t)floor(ecap1_duty), (uint32_t)(round(ecap1_duty * 1e1) - floor(ecap1_duty) * 1e1));
-    } else if (ecap1_freq < 1000000.0) {
-        // 10x kHz(10%) ~ 99x kHz(1%)
-        snprintf(str_freq, 20, "%8lu", (uint32_t)round(ecap1_freq * 1e-3));
-        // 1 %(100%) ~ 99 %(1%)
-        snprintf(str_duty, 20, "%8lu", (uint32_t)round(ecap1_duty));
-    } else if (ecap1_freq < 5000000.0) {
-        // 1.0 MHz(10%) ~ 5.0 MHz(2%)
-        snprintf(str_freq, 20, "%6lu.%01lu", (uint32_t)floor(ecap1_freq * 1e-6), (uint32_t)(round(ecap1_freq * 1e-5) - floor(ecap1_freq * 1e-6) * 1e1));
-        // 1x %(100%) ~ 9x %(10%)
-        snprintf(str_duty, 20, "%8lu", (uint32_t)round(ecap1_duty));
+        snprintf(str_duty, 20, "%8.2f %%", round(ecap1_duty * 1e2) / 1e2);
     } else {
-        // above 5 MHz
-        snprintf(str_freq, 20, "  none  ");
-        // above 5 MHz
-        snprintf(str_duty, 20, "  none  ");
+        // above 1 MHz
+        snprintf(str_freq, 20, "  >10.0 kHz ");
+        // above 1 MHz
+        snprintf(str_duty, 20, "----------");
     }
 
     ssd1351_display_num(0, 0, ecap1IntCount, 8, FONT_3216, Black, White);
-    ssd1351_display_string(0, 48, str_freq, FONT_3216, Black, Lime);
-    ssd1351_display_string(0, 96, str_duty, FONT_3216, Black, Yellow);
+    ssd1351_display_string(0, 48, str_freq, FONT_1608, Lime, Black);
+    ssd1351_display_string(0, 96, str_duty, FONT_1608, Yellow, Black);
 }
 
 void disp_ecap2_phase(void)
@@ -148,7 +133,7 @@ void disp_ecap2_phase(void)
 
     char str_phase[20];
 
-    snprintf(str_phase, 20, "%7.2f", round(ecap2_phase_degree * 1e2) / 1e2);
+    snprintf(str_phase, 20, "%7.2f deg", round(ecap2_phase_degree * 1e2) / 1e2);
 
     ssd1351_display_num(0, 0, ecap1IntCount, 8, FONT_3216, Black, White);
     ssd1351_display_num(0, 48, ecap2IntCount, 8, FONT_3216, Black, Lime);
