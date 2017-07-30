@@ -32,3 +32,21 @@ void epwm1_init(void)
     //
     EPWM_setTimeBaseCounterMode(EPWM1_BASE, EPWM_COUNTER_MODE_STOP_FREEZE);
 }
+
+void epwm1_start(void)
+{
+    //
+    // Start ePWM1, enabling SOCA and putting the counter in up-count mode
+    //
+    EPWM_enableADCTrigger(EPWM1_BASE, EPWM_SOC_A);
+    EPWM_setTimeBaseCounterMode(EPWM1_BASE, EPWM_COUNTER_MODE_UP);
+}
+
+void epwm1_stop(void)
+{
+    //
+    // Stop ePWM1, disabling SOCA and freezing the counter
+    //
+    EPWM_disableADCTrigger(EPWM1_BASE, EPWM_SOC_A);
+    EPWM_setTimeBaseCounterMode(EPWM1_BASE, EPWM_COUNTER_MODE_STOP_FREEZE);
+}

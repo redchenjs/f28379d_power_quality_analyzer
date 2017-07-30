@@ -60,11 +60,64 @@ void disp_adc1_harmonic(void)
     const int str_fore_color[10] = {Magenta, Lime, White, Lime, White, Lime, White, Lime, White, Lime};
     const int str_back_color[10] = {Black, Black, Black, Black, Black, Black, Black, Black, Black, Black};
 
-    snprintf(str_disp, 24, "DC%7ld.%01lumV%5lu.%01lu%%", (int32_t)floor(adc1_harmonic_rms[0] * 1e6), (uint32_t)(floor(adc1_harmonic_rms[0] * 1e7 - floor(adc1_harmonic_rms[0] * 1e6) * 1e1)), (uint32_t)floor(adc1_harmonic_percent[0]), (uint32_t)(floor(adc1_harmonic_percent[0] * 1e1 - floor(adc1_harmonic_percent[0]) * 1e1)));
+    snprintf(str_disp, 24, "DC%9.1fmV%7.1f%%", round(adc1_harmonic_rms[0] * 1e7) / 1e1, round(adc1_harmonic_percent[0] * 1e1) / 1e1);
     ssd1351_display_string(0, 2, str_disp, FONT_1206, str_fore_color[0], str_back_color[0]);
 
     for (i=1; i<10; i++) {
-        snprintf(str_disp, 24, "No.%d%5lu.%01lumV%5lu.%01lu%%", i, (uint32_t)floor(adc1_harmonic_rms[i] * 1e6), (uint32_t)(floor(adc1_harmonic_rms[i] * 1e7 - floor(adc1_harmonic_rms[i] * 1e6) * 1e1)), (uint32_t)floor(adc1_harmonic_percent[i]), (uint32_t)(floor(adc1_harmonic_percent[i] * 1e1 - floor(adc1_harmonic_percent[i]) * 1e1)));
+        snprintf(str_disp, 24, "No.%d%7.1fmV%7.1f%%", i, round(adc1_harmonic_rms[i] * 1e7) / 1e1, round(adc1_harmonic_percent[i] * 1e1) / 1e1);
+        ssd1351_display_string(0, 16+(i-1)*12, str_disp, FONT_1206, str_fore_color[i], str_back_color[i]);
+    }
+}
+
+void disp_adc2_current(void)
+{
+    extern double adc2_current_peak;
+    extern double adc2_current_ave;
+    extern double adc2_current_rms;
+
+    ssd1351_display_num(16, 0, (long)(adc2_current_peak*1e3), 5, FONT_3216, Magenta, Black);
+    ssd1351_display_num(16, 32, (long)(adc2_current_ave*1e3), 5, FONT_3216, Lime, Black);
+    ssd1351_display_num(16, 64, (long)(adc2_current_rms*1e3), 5, FONT_3216, Yellow, Black);
+}
+
+void disp_adc2_spectrum(void)
+{
+    extern double adc2_spectrum_abs[512];
+    uint16_t i;
+
+    if (adc2_spectrum_abs[0] < 0) {
+        ssd1351_draw_column(0, 0, 128, Black, White);
+    } else if ((uint32_t)(adc2_spectrum_abs[0]*1e3) > 128) {
+        ssd1351_draw_column(0, 0, 0, Black, White);
+    } else {
+        ssd1351_draw_column(0, 0, 128-(uint32_t)(adc2_spectrum_abs[0]*1e3), Black, White);
+    }
+
+    for (i=1; i<128; i++) {
+        if ((uint32_t)(adc2_spectrum_abs[i]*1e3) > 128) {
+            ssd1351_draw_column(i, 0, 0, Black, White);
+        } else {
+            ssd1351_draw_column(i, 0, 128-(uint32_t)(adc2_spectrum_abs[i]*1e3), Black, White);
+        }
+    }
+}
+
+void disp_adc2_harmonic(void)
+{
+    extern double adc2_harmonic_rms[10];
+    extern double adc2_harmonic_percent[10];
+    extern uint16_t adc2_first_harmonic_index;
+
+    int i;
+    char str_disp[24] = {0};
+    const int str_fore_color[10] = {Magenta, Lime, White, Lime, White, Lime, White, Lime, White, Lime};
+    const int str_back_color[10] = {Black, Black, Black, Black, Black, Black, Black, Black, Black, Black};
+
+    snprintf(str_disp, 24, "DC%9.1fmV%7.1f%%", round(adc2_harmonic_rms[0] * 1e7) / 1e1, round(adc2_harmonic_percent[0] * 1e1) / 1e1);
+    ssd1351_display_string(0, 2, str_disp, FONT_1206, str_fore_color[0], str_back_color[0]);
+
+    for (i=1; i<10; i++) {
+        snprintf(str_disp, 24, "No.%d%7.1fmV%7.1f%%", i, round(adc2_harmonic_rms[i] * 1e7) / 1e1, round(adc2_harmonic_percent[i] * 1e1) / 1e1);
         ssd1351_display_string(0, 16+(i-1)*12, str_disp, FONT_1206, str_fore_color[i], str_back_color[i]);
     }
 }
@@ -200,7 +253,7 @@ void disp_menu(void)
     extern const int  menu_item_fore_color[];
     extern const int  menu_item_back_color[];
 
-    extern uint16_t menu_item;;
+    extern uint16_t menu_item;
     extern uint16_t menu_level;
 
     char str_menu_item[24] = {0};
@@ -219,10 +272,13 @@ void disp_menu(void)
 
 void disp_refresh(void)
 {
+    extern uint16_t menu_item;
+    extern uint16_t menu_level;
     extern uint16_t menu_refresh;
 
     if (disp_refresh_flag == 1) {
         disp_refresh_flag = 0;
         ssd1351_clear_gram();
+        printf("menu_level : %u menu_item : %u\n", menu_level, menu_item);
     }
 }

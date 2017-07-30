@@ -7,32 +7,27 @@
 #include "driverlib.h"
 #include "device.h"
 
-#include <stdint.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <file.h>
-
-#include "F2837xD_sci_io.h"
-
+#include "inc/device/sci.h"
 #include "inc/device/led.h"
 #include "inc/device/spi.h"
 #include "inc/device/adc.h"
 #include "inc/device/key.h"
+#include "inc/device/epwm.h"
 #include "inc/device/eqep.h"
 #include "inc/device/ecap.h"
 #include "inc/device/cpu_timer.h"
 
 #include "inc/driver/ssd1351.h"
 
-volatile int scia_status = 0;
-volatile FILE *scia_fid;
-
 void device_init(void)
 {
+    sci1_init();
     led_init();
     spi_init();         // SPI总线配置
     key_init();         // 按键配置
+    epwm1_init();
     adc1_init();        // ADC配置
+    adc2_init();        // ADC配置
     eqep1_init();       // eQEP配置
     eqep3_init();       // eQEP配置
     ecap1_init();       // eQEP配置
@@ -55,15 +50,6 @@ void system_init(void)
 
     device_init();  // 器件外设功能模块初始化
     driver_init();  // 外部设备驱动初始化
-
-    //
-    // Redirect STDOUT to SCI
-    //
-    scia_status = add_device("scia", _SSA, SCI_open, SCI_close, SCI_read, SCI_write,
-                        SCI_lseek, SCI_unlink, SCI_rename);
-    scia_fid = fopen("scia","w");
-    freopen("scia:", "w", stdout);
-    setvbuf(stdout, NULL, _IONBF, 0);
 
     EINT;   // Enable interrupts
     ERTM;   // Enable debug events

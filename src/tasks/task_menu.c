@@ -8,6 +8,7 @@
 #include <device.h>
 
 #include "inc/device/adc.h"
+#include "inc/device/epwm.h"
 #include "inc/device/ecap.h"
 #include "inc/device/eqep.h"
 
@@ -51,6 +52,7 @@ const int menu_item_back_color[5] = {Black, Black, Black, Black, Black};
 void menu_run(void)
 {
     extern volatile uint16_t adc1_buffer_read;
+    extern volatile uint16_t adc2_buffer_read;
     extern uint32_t eqep1_position;
 
     eqep1_position_caculate();
@@ -65,30 +67,57 @@ void menu_run(void)
         case 1:
             switch (menu_item) {
                 case MENU_ITEM_MEASURE:
-                    adc1_start();
-                    if (adc1_buffer_read == 0) {
-                        adc1_buffer_read = 1;
-                        adc1_voltage_caculate();
-                        disp_adc1_voltage();
+                    adc1_2_start();
+                    epwm1_start();
+//                    if (adc1_buffer_read == 0) {
+//                        adc1_buffer_read = 1;
+//                        epwm1_stop();
+//                        adc1_voltage_caculate();
+//                        disp_adc1_voltage();
+//                    }
+                    if (adc2_buffer_read == 0) {
+                        adc2_buffer_read = 1;
+                        epwm1_stop();
+                        adc2_current_caculate();
+                        disp_adc2_current();
                     }
                     break;
                 case MENU_ITEM_SPECTRUM:
-                    adc1_start();
-                    if (adc1_buffer_read == 0) {
-                        adc1_buffer_read = 1;
-                        adc1_fft();
-                        adc1_spectrum_caculate();
-                        disp_adc1_spectrum();
+                    adc1_2_start();
+                    epwm1_start();
+//                    if (adc1_buffer_read == 0) {
+//                        adc1_buffer_read = 1;
+//                        epwm1_stop();
+//                        adc1_fft();
+//                        adc1_spectrum_caculate();
+//                        disp_adc1_spectrum();
+//                    }
+                    if (adc2_buffer_read == 0) {
+                        adc2_buffer_read = 1;
+                        epwm1_stop();
+                        adc2_fft();
+                        adc2_spectrum_caculate();
+                        disp_adc2_spectrum();
                     }
                     break;
                 case MENU_ITEM_HARMONIC:
-                    adc1_start();
-                    if (adc1_buffer_read == 0) {
-                        adc1_buffer_read = 1;
-                        adc1_fft();
-                        adc1_spectrum_caculate();
-                        adc1_harmonic_caculate();
-                        disp_adc1_harmonic();
+                    adc1_2_start();
+                    epwm1_start();
+//                    if (adc1_buffer_read == 0) {
+//                        adc1_buffer_read = 1;
+//                        epwm1_stop();
+//                        adc1_fft();
+//                        adc1_spectrum_caculate();
+//                        adc1_harmonic_caculate();
+//                        disp_adc1_harmonic();
+//                    }
+                    if (adc2_buffer_read == 0) {
+                        adc2_buffer_read = 1;
+                        epwm1_stop();
+                        adc2_fft();
+                        adc2_spectrum_caculate();
+                        adc2_harmonic_caculate();
+                        disp_adc2_harmonic();
                     }
                     break;
                 case MENU_ITEM_FREQUENCY:
