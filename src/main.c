@@ -5,17 +5,18 @@
  *      Author: redchenjs
  */
 #include "inc/system/init.h"
-#include "inc/system/user.h"
+#include "inc/system/tasks.h"
 
 int main(void)
 {
-    system_init();          // 系统初始化，包括器件的配置，功能模块配置，外设驱动配置
+    device_init();           // 器件初始化，包括器件的配置，功能模块配置
+    driver_init();           // 外设驱动初始化
 
-    user_init();            // 应用程序初始化
+    tasks_init();            // 任务初始化
 
     while (1) {
-        user_loop();        // 应用主循环
+        tasks_loop();        // 任务主循环
 
-        system_suspend();   // 系统休眠
+        device_suspend();    // 器件进入休眠模式
     }
 }

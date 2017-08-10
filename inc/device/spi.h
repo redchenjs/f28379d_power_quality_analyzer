@@ -8,6 +8,6 @@
 #ifndef INC_DEVICE_SPI_C_
 #define INC_DEVICE_SPI_C_
 
-extern void spi_init(void);
+extern void spi1_init(void);
 
 #endif /* INC_DEVICE_SPI_C_ */

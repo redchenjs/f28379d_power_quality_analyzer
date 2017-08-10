@@ -7,7 +7,7 @@
  *      Author: redchenjs
  */
 
-void spi_init(void)
+void spi1_init(void)
 {
     SPI_disableModule(SPIA_BASE);
 
@@ -31,7 +31,7 @@ void spi_init(void)
     SPI_enableHighSpeedMode(SPIA_BASE);
 
     SPI_setConfig(SPIA_BASE, DEVICE_LSPCLK_FREQ, SPI_PROT_POL0PHA1,
-               SPI_MODE_MASTER, DEVICE_LSPCLK_FREQ, 8);
+               SPI_MODE_MASTER, 12500000U, 8);
 
     SPI_setEmulationMode(SPIA_BASE, SPI_EMULATION_STOP_AFTER_TRANSMIT);
 

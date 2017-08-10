@@ -21,9 +21,19 @@
 
 void device_init(void)
 {
+    Device_init();      // 器件初始化配置
+    Device_initGPIO();  // 器件GPIO初始化配置
+
+    Interrupt_initModule();         // 初始化外设模块时钟
+    Interrupt_initVectorTable();    // 初始化中断向量表
+
+    EINT;   // Enable interrupts
+    ERTM;   // Enable debug events
+
     sci1_init();
+    sci2_init();
+    spi1_init();         // SPI总线配置
     led_init();
-    spi_init();         // SPI总线配置
     key_init();         // 按键配置
     epwm1_init();
     adc1_init();        // ADC配置
@@ -40,22 +50,7 @@ void driver_init(void)
     ssd1351_init();     // SSD1351显示初始化
 }
 
-void system_init(void)
-{
-    Device_init();      // 器件初始化配置
-    Device_initGPIO();  // 器件GPIO初始化配置
-
-    Interrupt_initModule();         // 初始化外设模块时钟
-    Interrupt_initVectorTable();    // 初始化中断向量表
-
-    device_init();  // 器件外设功能模块初始化
-    driver_init();  // 外部设备驱动初始化
-
-    EINT;   // Enable interrupts
-    ERTM;   // Enable debug events
-}
-
-void system_suspend(void)
+void device_suspend(void)
 {
     DEVICE_DELAY_US(1000);
 }

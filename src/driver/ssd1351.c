@@ -21,8 +21,8 @@
 #define SSD1351_DC_CLR()    GPIO_writePin(SSD1351_GPIO_PIN_DC, 0);
 
 #define SSD1351_WRITE_BYTE(__DATA)  do {\
-                                            SPI_writeDataBlockingNonFIFO(SPIA_BASE, __DATA << 8);\
-                                            DEVICE_DELAY_US(1);\
+                                            SPI_writeDataNonBlocking(SPIA_BASE, __DATA << 8);\
+                                            DEVICE_DELAY_US(0.5);\
                                     } while (0)
 
 enum ssd1351_panel_value {
@@ -81,6 +81,7 @@ enum ssd1351_graphic_acceleration_command_table {
     ACTIVATE_SCROLLING          = 0x9F
 };
 
+#pragma CODE_SECTION(ssd1351_write_byte, ".TI.ramfunc")
 static void ssd1351_write_byte(unsigned char chData, unsigned char chCmd)
 {
 	if (chCmd == SSD1351_DATA) {
@@ -92,6 +93,7 @@ static void ssd1351_write_byte(unsigned char chData, unsigned char chCmd)
 	SSD1351_WRITE_BYTE(chData);
 }
 
+#pragma CODE_SECTION(ssd1351_draw_point, ".TI.ramfunc")
 void ssd1351_draw_point(unsigned char chXpos, unsigned char chYpos, unsigned int hwColor)
 {
 	if (chXpos >= SSD1351_WIDTH || chYpos >= SSD1351_HEIGHT) {
@@ -183,6 +185,7 @@ void ssd1351_draw_v_line(unsigned char chXpos, unsigned char chYpos, unsigned ch
     }
 }
 
+#pragma CODE_SECTION(ssd1351_draw_column, ".TI.ramfunc")
 void ssd1351_draw_column(unsigned char chXpos, unsigned char chYpos, unsigned char chHeight, unsigned int hwColor0, unsigned int hwColor1)
 {
     unsigned int i;
@@ -371,6 +374,7 @@ void ssd1351_clear_rect(unsigned char chXpos, unsigned char chYpos, unsigned cha
     }
 }
 
+#pragma CODE_SECTION(ssd1351_clear_gram, ".TI.ramfunc")
 void ssd1351_clear_gram(void)
 {
     unsigned char i, j;
@@ -392,6 +396,7 @@ void ssd1351_clear_gram(void)
     }
 }
 
+#pragma CODE_SECTION(ssd1351_display_char, ".TI.ramfunc")
 void ssd1351_display_char(unsigned char chXpos, unsigned char chYpos, unsigned char chChr, unsigned char chFontIndex, unsigned int hwForeColor, unsigned int hwBackColor)
 {      	
 	unsigned char i, j;
@@ -447,7 +452,6 @@ static unsigned long _pow(unsigned char m, unsigned char n)
 	return result;
 }
 
-
 void ssd1351_display_num(unsigned char chXpos, unsigned char chYpos, unsigned long chNum, unsigned char chLen, unsigned char chFontIndex, unsigned int hwForeColor, unsigned int hwBackColor)
 {         	
 	unsigned char i;
@@ -471,6 +475,7 @@ void ssd1351_display_num(unsigned char chXpos, unsigned char chYpos, unsigned lo
 	}
 } 
 
+#pragma CODE_SECTION(ssd1351_display_string, ".TI.ramfunc")
 void ssd1351_display_string(unsigned char chXpos, unsigned char chYpos, const char *pchString, unsigned char chFontIndex, unsigned int hwForeColor, unsigned int hwBackColor)
 {
 	if (chXpos >= SSD1351_WIDTH || chYpos >= SSD1351_HEIGHT) {

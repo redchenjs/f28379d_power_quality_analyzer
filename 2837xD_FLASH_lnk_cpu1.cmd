@@ -52,10 +52,10 @@ PAGE 1 : /* Data Memory */
 //   RAMGS7      : origin = 0x013000, length = 0x001000
 //   RAMGS8      : origin = 0x014000, length = 0x001000
 //   RAMGS9      : origin = 0x015000, length = 0x001000
-   RAMGS10     : origin = 0x016000, length = 0x001000
-   RAMGS11     : origin = 0x017000, length = 0x001000
-   RAMGS12     : origin = 0x018000, length = 0x001000     /* Only Available on F28379D, F28377D, F28375D devices. Remove line on other devices. */
-   RAMGS13     : origin = 0x019000, length = 0x001000     /* Only Available on F28379D, F28377D, F28375D devices. Remove line on other devices. */
+   RAMGS10     : origin = 0x016000, length = 0x004000
+//   RAMGS11     : origin = 0x017000, length = 0x001000
+//   RAMGS12     : origin = 0x018000, length = 0x001000     /* Only Available on F28379D, F28377D, F28375D devices. Remove line on other devices. */
+//   RAMGS13     : origin = 0x019000, length = 0x001000     /* Only Available on F28379D, F28377D, F28375D devices. Remove line on other devices. */
 
    CPU2TOCPU1RAM   : origin = 0x03F800, length = 0x000400
    CPU1TOCPU2RAM   : origin = 0x03FC00, length = 0x000400
@@ -80,7 +80,7 @@ SECTIONS
    .switch             : > FLASHB      PAGE = 0, ALIGN(4)
 
    twiddleFactors   : > FLASHB,    PAGE  = 0
-   /* Test specific sections */
+
    fft1_in_buffer          : > RAMLS1,    ALIGN = 2048, PAGE = 0
    fft2_in_buffer          : > RAMLS2,    ALIGN = 2048, PAGE = 0
    fft1_out_buffer         : > RAMLS3,    ALIGN = 2048, PAGE = 0
