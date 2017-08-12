@@ -9,22 +9,28 @@
 
 #include <math.h>
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 
 #include "inc/system/fonts.h"
 #include "inc/driver/ssd1351.h"
 
+#include "inc/tasks/task_status.h"
+
 uint16_t disp_refresh_flag = 0;
 
 void disp_adc1_voltage(void)
 {
-    extern double adc1_voltage_peak;
-    extern double adc1_voltage_ave;
+//    extern double adc1_voltage_peak;
+//    extern double adc1_voltage_ave;
     extern double adc1_voltage_rms;
 
-    ssd1351_display_num(16, 0, (long)(adc1_voltage_peak*1e3), 5, FONT_3216, Magenta, Black);
-    ssd1351_display_num(16, 32, (long)(adc1_voltage_ave*1e3), 5, FONT_3216, Lime, Black);
-    ssd1351_display_num(16, 64, (long)(adc1_voltage_rms*1e3), 5, FONT_3216, Yellow, Black);
+    char str_rms[32] = {0};
+//    ssd1351_display_num(16, 0, (long)(adc1_voltage_peak*1e3), 5, FONT_3216, Magenta, Black);
+//    ssd1351_display_num(16, 32, (long)(adc1_voltage_ave*1e3), 5, FONT_3216, Lime, Black);
+//    snprintf(str_rms, 32, "Voltage:%7.3f mV", round(adc1_voltage_rms * 1e6) / 1e3);
+    snprintf(str_rms, 32, "Voltage:%9.3lf V", round(adc1_voltage_rms * 1e3) / 1e3);
+    ssd1351_display_string(0, 0, str_rms, FONT_1206, Yellow, Black);
 }
 
 void disp_adc1_spectrum(void)
@@ -71,13 +77,16 @@ void disp_adc1_harmonic(void)
 
 void disp_adc2_current(void)
 {
-    extern double adc2_current_peak;
-    extern double adc2_current_ave;
+//    extern double adc2_current_peak;
+//    extern double adc2_current_ave;
     extern double adc2_current_rms;
 
-    ssd1351_display_num(16, 0, (long)(adc2_current_peak*1e3), 5, FONT_3216, Magenta, Black);
-    ssd1351_display_num(16, 32, (long)(adc2_current_ave*1e3), 5, FONT_3216, Lime, Black);
-    ssd1351_display_num(16, 64, (long)(adc2_current_rms*1e3), 5, FONT_3216, Yellow, Black);
+    char str_rms[32] = {0};
+//    ssd1351_display_num(16, 0, (long)(adc2_current_peak*1e3), 5, FONT_3216, Magenta, Black);
+//    ssd1351_display_num(16, 32, (long)(adc2_current_ave*1e3), 5, FONT_3216, Lime, Black);
+//    snprintf(str_rms, 32, "Current:%7.3f mV", round(adc2_current_rms * 1e6) / 1e3);
+    snprintf(str_rms, 32, "Current:%9.3lf A", adc2_current_rms);
+    ssd1351_display_string(0, 12, str_rms, FONT_1206, Lime, Black);
 }
 
 void disp_adc2_spectrum(void)
@@ -128,54 +137,59 @@ void disp_ecap1_frequency(void)
     extern double ecap1_freq;
     extern double ecap1_duty;
 
-    char str_freq[20];
-    char str_duty[20];
+    char str_freq[32];
+    char str_duty[32];
 
     if (ecap1_freq < 0.050) {
         // below 50 mHz
-        snprintf(str_freq, 20, "  <50.0 mHz ");
+        snprintf(str_freq, 20, "  < 50.0 mHz");
         // below 50 mHz
-        snprintf(str_duty, 20, "----------");
+        snprintf(str_duty, 20, "    --------");
     } else if (ecap1_freq < 0.1000) {
         // 50.000 mHz(0.002%) ~ 99.999 mHz(0.001%)
-        snprintf(str_freq, 20, "%8.3f mHz", round(ecap1_freq * 1e6) / 1e3);
+        snprintf(str_freq, 20, "%8.3lf mHz", round(ecap1_freq * 1e6) / 1e3);
         // 1.000 %(0.1%) ~ 99.999%(0.001%)
-        snprintf(str_duty, 20, "%8.2f %%", round(ecap1_duty * 1e2) / 1e2);
+        snprintf(str_duty, 20, "%8.2lf %%", round(ecap1_duty * 1e2) / 1e2);
     } else if (ecap1_freq < 1.0000) {
         // 100.000 mHz(0.001%) ~ 999.999 mHz(0.0001%)
-        snprintf(str_freq, 20, "%8.3f mHz", round(ecap1_freq * 1e6) / 1e3);
+        snprintf(str_freq, 20, "%8.3lf mHz", round(ecap1_freq * 1e6) / 1e3);
         // 1.000 %(0.1%) ~ 99.999%(0.001%)
-        snprintf(str_duty, 20, "%8.2f %%", round(ecap1_duty * 1e2) / 1e2);
+        snprintf(str_duty, 20, "%8.2lf %%", round(ecap1_duty * 1e2) / 1e2);
     } else if (ecap1_freq < 10.000) {
         // 1.000000 Hz(0.0001%) ~ 9.999999 Hz(0.00001%)
-        snprintf(str_freq, 20, "%9.6f Hz", round(ecap1_freq * 1e6) / 1e6);
+        snprintf(str_freq, 20, "%9.6lf Hz", round(ecap1_freq * 1e6) / 1e6);
         // 1.000 %(0.1%) ~ 99.999%(0.001%)
-        snprintf(str_duty, 20, "%8.2f %%", round(ecap1_duty * 1e2) / 1e2);
+        snprintf(str_duty, 20, "%8.2lf %%", round(ecap1_duty * 1e2) / 1e2);
     } else if (ecap1_freq < 100.000) {
         // 10.0000 Hz(0.001%) ~ 99.9999 Hz(0.0001%)
-        snprintf(str_freq, 20, "%9.5f Hz", round(ecap1_freq * 1e5) / 1e5);
+        snprintf(str_freq, 20, "%9.5lf Hz", round(ecap1_freq * 1e5) / 1e5);
         // 1.000 %(0.1%) ~ 99.999%(0.001%)
-        snprintf(str_duty, 20, "%8.2f %%", round(ecap1_duty * 1e2) / 1e2);
+        snprintf(str_duty, 20, "%8.2lf %%", round(ecap1_duty * 1e2) / 1e2);
     } else if (ecap1_freq < 1000.00) {
         // 100.00 Hz(0.01%) ~ 999.99 Hz(0.001%)
-        snprintf(str_freq, 20, "%9.3f Hz", round(ecap1_freq * 1e3) / 1e3);
+        snprintf(str_freq, 20, "%9.3lf Hz", round(ecap1_freq * 1e3) / 1e3);
         // 1.000 %(0.1%) ~ 99.999%(0.001%)
-        snprintf(str_duty, 20, "%8.2f %%", round(ecap1_duty * 1e2) / 1e2);
+        snprintf(str_duty, 20, "%8.2lf %%", round(ecap1_duty * 1e2) / 1e2);
     } else if (ecap1_freq < 10000.0) {
         // 1.000 kHz(0.1%) ~ 9.999 kHz(0.01%)
-        snprintf(str_freq, 20, "%8.3f kHz", round(ecap1_freq) / 1e3);
+        snprintf(str_freq, 20, "%8.3lf kHz", round(ecap1_freq) / 1e3);
         // 1.00 %(1%) ~ 99.99%(0.01%)
-        snprintf(str_duty, 20, "%8.2f %%", round(ecap1_duty * 1e2) / 1e2);
+        snprintf(str_duty, 20, "%8.2lf %%", round(ecap1_duty * 1e2) / 1e2);
     } else {
         // above 1 MHz
-        snprintf(str_freq, 20, "  >10.0 kHz ");
+        snprintf(str_freq, 20, "  > 10.0 kHz");
         // above 1 MHz
-        snprintf(str_duty, 20, "----------");
+        snprintf(str_duty, 20, "    --------");
     }
 
-    ssd1351_display_num(0, 0, ecap1IntCount, 8, FONT_3216, Black, White);
-    ssd1351_display_string(0, 48, str_freq, FONT_1608, Lime, Black);
-    ssd1351_display_string(0, 96, str_duty, FONT_1608, Yellow, Black);
+    char str_temp[32];
+    strcpy(str_temp, str_freq);
+    //    ssd1351_display_num(0, 0, ecap1IntCount, 8, FONT_3216, Black, White);
+    snprintf(str_freq, 32, "Freq:%16s", str_temp);
+    ssd1351_display_string(0, 24, str_freq, FONT_1206, Lime, Black);
+    strcpy(str_temp, str_duty);
+    snprintf(str_duty, 32, "Duty:%14s", str_temp);
+    ssd1351_display_string(0, 36, str_duty, FONT_1206, Yellow, Black);
 }
 
 void disp_ecap2_phase(void)
@@ -186,11 +200,11 @@ void disp_ecap2_phase(void)
 
     char str_phase[20];
 
-    snprintf(str_phase, 20, "%7.2f deg", round(ecap2_phase_degree * 1e2) / 1e2);
-
-    ssd1351_display_num(0, 0, ecap1IntCount, 8, FONT_3216, Black, White);
-    ssd1351_display_num(0, 48, ecap2IntCount, 8, FONT_3216, Black, Lime);
-    ssd1351_display_string(0, 96, str_phase, FONT_1608, Yellow, Black);
+//    snprintf(str_phase, 32, "Phase:%7.2f deg", round(ecap2_phase_degree * 1e2) / 1e2);
+    snprintf(str_phase, 32, "Phase:%11.2lf deg", round(ecap2_phase_degree * 1e2) / 1e2);
+//    ssd1351_display_num(0, 0, ecap1IntCount, 8, FONT_3216, Black, White);
+//    ssd1351_display_num(0, 48, ecap2IntCount, 8, FONT_3216, Black, Lime);
+    ssd1351_display_string(0, 48, str_phase, FONT_1206, Yellow, Black);
 }
 
 void disp_eqep3_frequency(void)
@@ -233,7 +247,54 @@ void disp_eqep3_frequency(void)
     }
 
     ssd1351_display_num(0, 0, eqep3IntCount, 8, FONT_3216, Black, White);
-    ssd1351_display_string(0, 48, str_freq, FONT_3216, Black, Lime);
+    ssd1351_display_string(0, 96, str_freq, FONT_3216, Black, Lime);
+}
+
+void disp_adc1_2_power(void)
+{
+    extern double adc1_2_apparent_power;
+    extern double adc1_2_active_power;
+    extern double adc1_2_reactive_power;
+    extern double adc1_2_power_factor;
+
+    char str_factor[20];
+
+    snprintf(str_factor, 32, "PF:%14.3lf", round(adc1_2_power_factor * 1e3) / 1e3);
+
+//    ssd1351_display_num(0, 0, ecap1IntCount, 8, FONT_3216, Black, White);
+//    ssd1351_display_num(0, 48, ecap2IntCount, 8, FONT_3216, Black, Lime);
+    ssd1351_display_string(0, 60, str_factor, FONT_1206, Yellow, Black);
+}
+
+void disp_status(void)
+{
+    extern elec_param_t elec_param[8];
+    char str_temp[24] = {0};
+    uint16_t i, j;
+
+    i = 8;
+    for (j=1; j<5; j++) {
+        if (elec_param[j].status != 0) {
+            snprintf(str_temp, 32, "%d", j);
+            ssd1351_display_string(i, 84, str_temp, FONT_1616, Black, Lime);
+        } else {
+            snprintf(str_temp, 32, "%d", j);
+            ssd1351_display_string(i, 84, str_temp, FONT_1616, Black, Red);
+        }
+        i += 32;
+    }
+
+    i = 24;
+    for (j=5; j<8; j++) {
+        if (elec_param[j].status != 0) {
+            snprintf(str_temp, 32, "%d", j);
+            ssd1351_display_string(i, 112, str_temp, FONT_1616, Black, Lime);
+        } else {
+            snprintf(str_temp, 32, "%d", j);
+            ssd1351_display_string(i, 112, str_temp, FONT_1616, Black, Red);
+        }
+        i += 32;
+    }
 }
 
 void disp_time(void)
@@ -242,7 +303,7 @@ void disp_time(void)
     char str_time[24] = {0};
 
     snprintf(str_time, 20, "%02u:%02u:%02u", (cpuTimer0IntCount/60/60)%24, (cpuTimer0IntCount/60)%60, cpuTimer0IntCount%60);
-    ssd1351_display_string(0, 96, str_time, FONT_3216, Lime, Black);
+    ssd1351_display_string(0, 112, str_time, FONT_1616, Lime, Black);
 }
 
 void disp_menu(void)
@@ -280,5 +341,6 @@ void disp_refresh(void)
         disp_refresh_flag = 0;
         ssd1351_clear_gram();
         printf("menu_level : %u menu_item : %u\n", menu_level, menu_item);
+        SCI_writeCharArray(SCIB_BASE, (uint16_t *)"01234567890\r\n", sizeof("01234567890\r\n")-1);
     }
 }

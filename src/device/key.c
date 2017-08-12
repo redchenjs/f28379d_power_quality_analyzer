@@ -39,4 +39,13 @@ void key_init(void)
 
     GPIO_enableInterrupt(GPIO_INT_XINT1);
     GPIO_enableInterrupt(GPIO_INT_XINT2);
+
+    GPIO_setPadConfig(67, GPIO_PIN_TYPE_STD);
+    GPIO_setPadConfig(111, GPIO_PIN_TYPE_STD);
+
+    GPIO_setDirectionMode(67, GPIO_DIR_MODE_OUT);
+    GPIO_setDirectionMode(111, GPIO_DIR_MODE_OUT);
+
+    GPIO_writePin(67, 0);
+    GPIO_writePin(111, 0);
 }

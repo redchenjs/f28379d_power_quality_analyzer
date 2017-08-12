@@ -9,6 +9,7 @@
 
 #include "fpu_vector.h"
 
+#include "inc/device/epwm.h"
 //
 // Globals
 //
@@ -32,7 +33,60 @@ __interrupt void adc2_isr(void);
 //
 void adc1_init(void)
 {
-    Interrupt_register(INT_ADCD1, &adc1_isr);
+    Interrupt_register(INT_ADCC1, &adc1_isr);
+
+    //
+    // Set up the ADC and the ePWM and initialize the SOC
+    //
+    //
+    // Set ADCCLK divider to /4
+    //
+
+    ADC_setPrescaler(ADCC_BASE, ADC_CLK_DIV_4_0);
+
+    //
+    // Set resolution and signal mode (see #defines above) and load
+    // corresponding trims.
+    //
+    ADC_setMode(ADCC_BASE, ADC_RESOLUTION_16BIT, ADC_MODE_SINGLE_ENDED);
+
+    //
+    // Set pulse positions to late
+    //
+    ADC_setInterruptPulseMode(ADCC_BASE, ADC_PULSE_END_OF_CONV);
+
+    //
+    // Power up the ADC and then delay for 1 ms
+    //
+    ADC_enableConverter(ADCC_BASE);
+    DEVICE_DELAY_US(1000);
+
+    ADC_setupSOC(ADCC_BASE, ADC_SOC_NUMBER0, ADC_TRIGGER_EPWM1_SOCA,
+                 ADC_CH_ADCIN5, 64);
+
+    //
+    // Set SOC0 to set the interrupt 1 flag. Enable the interrupt and make
+    // sure its flag is cleared.
+    //
+    ADC_setInterruptSource(ADCC_BASE, ADC_INT_NUMBER1, ADC_SOC_NUMBER0);
+    ADC_enableInterrupt(ADCC_BASE, ADC_INT_NUMBER1);
+    ADC_clearInterruptStatus(ADCC_BASE, ADC_INT_NUMBER1);
+
+    //
+    // Initialize results buffer
+    //
+    for (adc1_index = 0; adc1_index < 2048; adc1_index++) {
+        adc1_results[adc1_index] = 0;
+    }
+
+    adc1_index = 0;
+    adc1_ready = 1;
+    adc1_buffer_read = 1;
+}
+
+void adc2_init(void)
+{
+    Interrupt_register(INT_ADCD1, &adc2_isr);
 
     //
     // Set up the ADC and the ePWM and initialize the SOC
@@ -74,59 +128,6 @@ void adc1_init(void)
     //
     // Initialize results buffer
     //
-    for (adc1_index = 0; adc1_index < 2048; adc1_index++) {
-        adc1_results[adc1_index] = 0;
-    }
-
-    adc1_index = 0;
-    adc1_ready = 1;
-    adc1_buffer_read = 1;
-}
-
-void adc2_init(void)
-{
-    Interrupt_register(INT_ADCC1, &adc2_isr);
-
-    //
-    // Set up the ADC and the ePWM and initialize the SOC
-    //
-    //
-    // Set ADCCLK divider to /4
-    //
-
-    ADC_setPrescaler(ADCC_BASE, ADC_CLK_DIV_4_0);
-
-    //
-    // Set resolution and signal mode (see #defines above) and load
-    // corresponding trims.
-    //
-    ADC_setMode(ADCC_BASE, ADC_RESOLUTION_16BIT, ADC_MODE_DIFFERENTIAL);
-
-    //
-    // Set pulse positions to late
-    //
-    ADC_setInterruptPulseMode(ADCC_BASE, ADC_PULSE_END_OF_CONV);
-
-    //
-    // Power up the ADC and then delay for 1 ms
-    //
-    ADC_enableConverter(ADCC_BASE);
-    DEVICE_DELAY_US(1000);
-
-    ADC_setupSOC(ADCC_BASE, ADC_SOC_NUMBER0, ADC_TRIGGER_EPWM1_SOCA,
-                 ADC_CH_ADCIN4_ADCIN5, 64);
-
-    //
-    // Set SOC0 to set the interrupt 1 flag. Enable the interrupt and make
-    // sure its flag is cleared.
-    //
-    ADC_setInterruptSource(ADCC_BASE, ADC_INT_NUMBER1, ADC_SOC_NUMBER0);
-    ADC_enableInterrupt(ADCC_BASE, ADC_INT_NUMBER1);
-    ADC_clearInterruptStatus(ADCC_BASE, ADC_INT_NUMBER1);
-
-    //
-    // Initialize results buffer
-    //
     for (adc2_index = 0; adc2_index < 2048; adc2_index++) {
         adc2_results[adc2_index] = 0;
     }
@@ -143,8 +144,9 @@ void adc1_2_start(void)
     } else {
         adc1_ready = 0;
         adc2_ready = 0;
-        Interrupt_enable(INT_ADCD1);
         Interrupt_enable(INT_ADCC1);
+        Interrupt_enable(INT_ADCD1);
+        epwm1_start();
     }
 }
 
@@ -157,7 +159,7 @@ __interrupt void adc1_isr(void)
     //
     // Add the latest result to the buffer
     //
-    adc1_results[adc1_index] = ADC_readResult(ADCDRESULT_BASE, ADC_SOC_NUMBER0) - 32768;
+    adc1_results[adc1_index] = ADC_readResult(ADCCRESULT_BASE, ADC_SOC_NUMBER0) - 31389;
     adc1_index += 2;
     //
     // Set the bufferFull flag if the buffer is full
@@ -165,7 +167,8 @@ __interrupt void adc1_isr(void)
     if (2048 <= adc1_index) {
         adc1_index = 0;
 
-        Interrupt_disable(INT_ADCD1);
+        epwm1_stop();
+        Interrupt_disable(INT_ADCC1);
 
         if (adc1_buffer_read == 1) {
             adc1_buffer_read = 0;
@@ -177,7 +180,7 @@ __interrupt void adc1_isr(void)
     //
     // Clear the interrupt flag and issue ACK
     //
-    ADC_clearInterruptStatus(ADCD_BASE, ADC_INT_NUMBER1);
+    ADC_clearInterruptStatus(ADCC_BASE, ADC_INT_NUMBER1);
     Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP1);
 }
 
@@ -187,7 +190,7 @@ __interrupt void adc2_isr(void)
     //
     // Add the latest result to the buffer
     //
-    adc2_results[adc2_index] = ADC_readResult(ADCCRESULT_BASE, ADC_SOC_NUMBER0) - 32768;
+    adc2_results[adc2_index] = ADC_readResult(ADCDRESULT_BASE, ADC_SOC_NUMBER0) - 32768;
     adc2_index += 2;
     //
     // Set the bufferFull flag if the buffer is full
@@ -195,7 +198,8 @@ __interrupt void adc2_isr(void)
     if (2048 <= adc2_index) {
         adc2_index = 0;
 
-        Interrupt_disable(INT_ADCC1);
+        epwm1_stop();
+        Interrupt_disable(INT_ADCD1);
 
         if (adc2_buffer_read == 1) {
             adc2_buffer_read = 0;
@@ -207,6 +211,6 @@ __interrupt void adc2_isr(void)
     //
     // Clear the interrupt flag and issue ACK
     //
-    ADC_clearInterruptStatus(ADCC_BASE, ADC_INT_NUMBER1);
+    ADC_clearInterruptStatus(ADCD_BASE, ADC_INT_NUMBER1);
     Interrupt_clearACKGroup(INTERRUPT_ACK_GROUP1);
 }

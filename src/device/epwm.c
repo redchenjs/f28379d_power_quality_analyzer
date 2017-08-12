@@ -23,9 +23,9 @@ void epwm1_init(void)
     //
     // Set the compare A value to 2048 and the period to 4096
     //
-    EPWM_setClockPrescaler(EPWM1_BASE, EPWM_CLOCK_DIVIDER_2, EPWM_HSCLOCK_DIVIDER_1);
+    EPWM_setClockPrescaler(EPWM1_BASE, EPWM_CLOCK_DIVIDER_1, EPWM_HSCLOCK_DIVIDER_1);
     EPWM_setCounterCompareValue(EPWM1_BASE, EPWM_COUNTER_COMPARE_A, 0x0000);
-    EPWM_setTimeBasePeriod(EPWM1_BASE, 0xBEBC);
+    EPWM_setTimeBasePeriod(EPWM1_BASE, 0x07A1);
 
     //
     // Freeze the counter

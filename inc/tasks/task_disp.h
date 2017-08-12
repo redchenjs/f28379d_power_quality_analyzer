@@ -21,6 +21,8 @@ extern void disp_adc1_2_power(void);
 extern void disp_ecap1_frequency(void);
 extern void disp_ecap2_phase(void);
 
+extern void disp_status(void);
+extern void disp_learn(void);
 extern void disp_time(void);
 extern void disp_menu(void);
 
