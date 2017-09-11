@@ -59,21 +59,56 @@ void status_update(void)
 //    elec_param[7].current = 8;
 
     for (i=1; i<8; i++) {
-        if ((elec_param[i].status == 0) && ((adc2_current_rms) <=  (elec_param[i].current + 0.001)) && ((adc2_current_rms >=  elec_param[i].current - 0.001))) {
-            elec_param[i].count_1++;
-            if (elec_param[i].count_1 == 1) {
-                elec_param[i].count_1 = 0;
-                elec_param[i].status = 1;
+        if (elec_param[i].status == 0) {
+            if ((adc2_current_rms < elec_param[i].current_max) && (adc2_current_rms > elec_param[i].current_min)) {
+                elec_param[i].count_on++;
+                if (elec_param[i].count_on == 3) {
+                    elec_param[i].status = 1;
+                }
+            } else {
+                if (elec_param[i].count_on > 0) {
+                    elec_param[i].count_on--;
+                    if (elec_param[i].count_on == 0) {
+                        elec_param[i].status = 0;
+                    }
+                }
             }
         }
-        if ((elec_param[i].status == 1) && ((adc2_current_rms) >=  (elec_param[i].current + 0.001)) || ((adc2_current_rms <=  elec_param[i].current - 0.001))) {
-            elec_param[i].count_2++;
-            if (elec_param[i].count_2 == 1) {
-                elec_param[i].count_2 = 0;
-                elec_param[i].status = 0;
+
+        if (elec_param[i].status == 1) {
+            if ((adc2_current_rms > elec_param[i].current_max) || (adc2_current_rms < elec_param[i].current_min)) {
+                elec_param[i].count_off++;
+                if (elec_param[i].count_off == 3) {
+                    elec_param[i].status = 0;
+                }
+            } else {
+                if (elec_param[i].count_off > 0) {
+                    elec_param[i].count_off--;
+                    if (elec_param[i].count_off == 0) {
+                        elec_param[i].status = 1;
+                    }
+                }
             }
         }
     }
+
+
+//    for (i=1; i<8; i++) {
+//        if ((elec_param[i].status == 0) && ((adc2_current_rms) <=  (elec_param[i].current + 0.001)) && ((adc2_current_rms >=  elec_param[i].current - 0.001))) {
+//            elec_param[i].count_on++;
+//            if (elec_param[i].count_on == 1) {
+//                elec_param[i].count_on = 0;
+//                elec_param[i].status = 1;
+//            }
+//        }
+//        if ((elec_param[i].status == 1) && ((adc2_current_rms) >=  (elec_param[i].current + 0.001)) || ((adc2_current_rms <=  elec_param[i].current - 0.001))) {
+//            elec_param[i].count_off++;
+//            if (elec_param[i].count_off == 1) {
+//                elec_param[i].count_off = 0;
+//                elec_param[i].status = 0;
+//            }
+//        }
+//    }
 //    for (i=1; i<8; i++) {
 //        if ((elec_param[i].status == 0) && (adc2_harmonic_abs[1] <=  (elec_param[i].current + 0.0005)) && (adc2_harmonic_abs[1] >=  (elec_param[i].current - 0.0005))) {
 //            elec_param[i].count_1++;
@@ -115,17 +150,20 @@ void status_view(void)
     snprintf(str_temp, 32, "%d", num);
     ssd1351_display_string(0, 0, str_temp, FONT_3216, Yellow, Blue);
 
-    snprintf(str_temp, 32, "Current:%9.5lf", round(elec_param[num].current * 1e3) / 1e3);
+    snprintf(str_temp, 32, "cur max:%12.6lf", elec_param[num].current_max);
     ssd1351_display_string(0, 32, str_temp, FONT_1206, Lime, Black);
 
-    snprintf(str_temp, 32, "Harmonic1:%9.3lf", round(elec_param[num].harmonic_1 * 1e3) / 1e3);
+    snprintf(str_temp, 32, "cur min:%12.6lf", elec_param[num].current_min);
     ssd1351_display_string(0, 44, str_temp, FONT_1206, Lime, Black);
 
-    snprintf(str_temp, 32, "Harmonic2:%9.3lf", round(elec_param[num].harmonic_2 * 1e3) / 1e3);
+    snprintf(str_temp, 32, "harmonic1:%10.6lf", elec_param[num].harmonic_1);
     ssd1351_display_string(0, 56, str_temp, FONT_1206, Lime, Black);
 
-    snprintf(str_temp, 32, "Harmonic3:%9.3lf", round(elec_param[num].harmonic_3 * 1e3) / 1e3);
+    snprintf(str_temp, 32, "harmonic2:%10.6lf", elec_param[num].harmonic_2);
     ssd1351_display_string(0, 68, str_temp, FONT_1206, Lime, Black);
+
+    snprintf(str_temp, 32, "harmonic3:%10.6lf", elec_param[num].harmonic_3);
+    ssd1351_display_string(0, 80, str_temp, FONT_1206, Lime, Black);
 }
 
 void status_learn(void)
@@ -145,6 +183,7 @@ void status_learn(void)
     extern elec_param_t elec_param[8];
     char str_temp[24] = {0};
     extern uint32_t eqep1_position;
+    static uint16_t cnt = 100;
 
     num = (uint16_t)eqep1_position % 7 + 1;
 
@@ -152,25 +191,44 @@ void status_learn(void)
     ssd1351_display_string(0, 0, str_temp, FONT_3216, Yellow, Blue);
 
     if (learn_flag != 0) {
-        learn_flag = 0;
-        ssd1351_display_string(32, 64, "Wait...", FONT_1608, Yellow, Blue);
-        DEVICE_DELAY_US(1000000);
-        elec_param[num].voltage = adc1_voltage_rms;
-        elec_param[num].current = adc2_current_rms;
-        elec_param[num].phase = ecap2_phase_degree;
-        elec_param[num].frequency = ecap1_freq;
-        elec_param[num].duty = ecap1_duty;
-        elec_param[num].harmonic_1 = adc2_harmonic_abs[1];
-        elec_param[num].harmonic_2 = adc2_harmonic_abs[2];
-        elec_param[num].harmonic_3 = adc2_harmonic_abs[3];
-        elec_param[num].harmonic_4 = adc2_harmonic_abs[4];
-        elec_param[num].harmonic_5 = adc2_harmonic_abs[5];
-        elec_param[num].harmonic_6 = adc2_harmonic_abs[6];
-        elec_param[num].harmonic_7 = adc2_harmonic_abs[7];
-        elec_param[num].harmonic_8 = adc2_harmonic_abs[8];
-        elec_param[num].harmonic_9 = adc2_harmonic_abs[9];
-        ssd1351_display_string(32, 64, "   OK  ", FONT_1608, Yellow, Blue);
+        if (elec_param[num].current_max == 0.0 || elec_param[num].current_min == 0.0) {
+            elec_param[num].current_max = adc2_current_rms;
+            elec_param[num].current_min = adc2_current_rms;
+        }
+
+        if (cnt > 0) {
+            snprintf(str_temp, 32, "  %2u  ", cnt--);
+            ssd1351_display_string(32, 64, str_temp, FONT_1608, Yellow, Blue);
+            if (cnt < 50) {
+                if (elec_param[num].current_max < adc2_current_rms) {
+                    elec_param[num].current_max = adc2_current_rms;
+                }
+                if (elec_param[num].current_min > adc2_current_rms) {
+                    elec_param[num].current_min = adc2_current_rms;
+                }
+            }
+            DEVICE_DELAY_US(100000);
+        } else {
+            learn_flag = 0;
+            cnt = 100;
+    //        elec_param[num].voltage = adc1_voltage_rms;
+    //        elec_param[num].current = adc2_current_rms;
+    //        elec_param[num].phase = ecap2_phase_degree;
+    //        elec_param[num].frequency = ecap1_freq;
+    //        elec_param[num].duty = ecap1_duty;
+            elec_param[num].harmonic_1 = adc2_harmonic_abs[1];
+            elec_param[num].harmonic_2 = adc2_harmonic_abs[2];
+            elec_param[num].harmonic_3 = adc2_harmonic_abs[3];
+    //        elec_param[num].harmonic_4 = adc2_harmonic_abs[4];
+    //        elec_param[num].harmonic_5 = adc2_harmonic_abs[5];
+    //        elec_param[num].harmonic_6 = adc2_harmonic_abs[6];
+    //        elec_param[num].harmonic_7 = adc2_harmonic_abs[7];
+    //        elec_param[num].harmonic_8 = adc2_harmonic_abs[8];
+    //        elec_param[num].harmonic_9 = adc2_harmonic_abs[9];
+            ssd1351_display_string(32, 64, "  OK  ", FONT_1608, Yellow, Blue);
+        }
     }
+
     func_flag = 0;
 }
 
@@ -192,4 +250,28 @@ void status_clear(void)
 
     ssd1351_display_string(32, 64, "   OK  ", FONT_1608, Yellow, Blue);
     DEVICE_DELAY_US(1000000);
+}
+
+void status_init(void)
+{
+    elec_param[1].current_max = 0.0411013141;
+    elec_param[1].current_min = 0.0409641005;
+
+    elec_param[2].current_max = 0.163788855;
+    elec_param[2].current_min = 0.161980659;
+
+    elec_param[3].current_max = 0.142437235;
+    elec_param[3].current_min = 0.141600385;
+
+    elec_param[4].current_max = 0.109319478;
+    elec_param[4].current_min = 0.107458554;
+
+    elec_param[5].current_max = 0.128235251;
+    elec_param[5].current_min = 0.126066014;
+
+    elec_param[6].current_max = 0.174407229;
+    elec_param[6].current_min = 0.172025710;
+
+    elec_param[7].current_max = 0.364262998;
+    elec_param[7].current_min = 0.363389462;
 }

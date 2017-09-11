@@ -142,9 +142,9 @@ void disp_ecap1_frequency(void)
 
     if (ecap1_freq < 0.050) {
         // below 50 mHz
-        snprintf(str_freq, 20, "  < 50.0 mHz");
+        snprintf(str_freq, 20, "< 50.0 mHz");
         // below 50 mHz
-        snprintf(str_duty, 20, "    --------");
+        snprintf(str_duty, 20, "--------");
     } else if (ecap1_freq < 0.1000) {
         // 50.000 mHz(0.002%) ~ 99.999 mHz(0.001%)
         snprintf(str_freq, 20, "%8.3lf mHz", round(ecap1_freq * 1e6) / 1e3);
@@ -177,15 +177,15 @@ void disp_ecap1_frequency(void)
         snprintf(str_duty, 20, "%8.2lf %%", round(ecap1_duty * 1e2) / 1e2);
     } else {
         // above 1 MHz
-        snprintf(str_freq, 20, "  > 10.0 kHz");
+        snprintf(str_freq, 20, "> 10.0 kHz");
         // above 1 MHz
-        snprintf(str_duty, 20, "    --------");
+        snprintf(str_duty, 20, "--------");
     }
 
     char str_temp[32];
     strcpy(str_temp, str_freq);
     //    ssd1351_display_num(0, 0, ecap1IntCount, 8, FONT_3216, Black, White);
-    snprintf(str_freq, 32, "Freq:%16s", str_temp);
+    snprintf(str_freq, 32, "Freq:%15s", str_temp);
     ssd1351_display_string(0, 24, str_freq, FONT_1206, Lime, Black);
     strcpy(str_temp, str_duty);
     snprintf(str_duty, 32, "Duty:%14s", str_temp);

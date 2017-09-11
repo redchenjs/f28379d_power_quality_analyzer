@@ -20,10 +20,11 @@ typedef enum elec_status {
 
 typedef struct {
     uint16_t status;
-    uint16_t count_1;
-    uint16_t count_2;
+    uint16_t count_on;
+    uint16_t count_off;
     double voltage;
-    double current;
+    double current_max;
+    double current_min;
     double phase;
     double frequency;
     double duty;
@@ -68,5 +69,6 @@ extern void status_update(void);
 extern void status_learn(void);
 extern void status_view(void);
 extern void status_clear(void);
+extern void status_init(void);
 
 #endif /* INC_TASKS_TASK_STATUS_H_ */

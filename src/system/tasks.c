@@ -15,5 +15,6 @@ void tasks_loop(void)
 
 void tasks_init(void)
 {
+    status_init();
 //    status_clear();
 }
