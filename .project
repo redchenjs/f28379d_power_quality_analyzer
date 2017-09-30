@@ -26,64 +26,29 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>f2837xd_common_cmd</name>
+			<name>f2837xd_common</name>
 			<type>2</type>
-			<locationURI>TI_PRODUCTS_DIR/C2000Ware_1_00_01_00/device_support/f2837xd/common/cmd</locationURI>
-		</link>
-		<link>
-			<name>f2837xd_common_source</name>
-			<type>2</type>
-			<locationURI>TI_PRODUCTS_DIR/C2000Ware_1_00_01_00/device_support/f2837xd/common/source</locationURI>
+			<locationURI>TI_PRODUCTS_DIR/C2000Ware_1_00_02_00_Software/device_support/f2837xd/common/source</locationURI>
 		</link>
 		<link>
 			<name>f2837xd_driverlib</name>
 			<type>2</type>
-			<locationURI>TI_PRODUCTS_DIR/C2000Ware_1_00_01_00/driverlib/f2837xd/driverlib</locationURI>
+			<locationURI>TI_PRODUCTS_DIR/C2000Ware_1_00_02_00_Software/driverlib/f2837xd/driverlib</locationURI>
 		</link>
 		<link>
-			<name>f2837xd_headers_cmd</name>
+			<name>f2837xd_headers</name>
 			<type>2</type>
-			<locationURI>TI_PRODUCTS_DIR/C2000Ware_1_00_01_00/device_support/f2837xd/headers/cmd</locationURI>
-		</link>
-		<link>
-			<name>f2837xd_headers_source</name>
-			<type>2</type>
-			<locationURI>TI_PRODUCTS_DIR/C2000Ware_1_00_01_00/device_support/f2837xd/headers/source</locationURI>
-		</link>
-		<link>
-			<name>f2837xd_libraries_fpu_cmd</name>
-			<type>2</type>
-			<locationURI>TI_PRODUCTS_DIR/C2000Ware_1_00_01_00/libraries/dsp/FPU/c28/cmd</locationURI>
-		</link>
-		<link>
-			<name>f2837xd_libraries_fpu_fft</name>
-			<type>2</type>
-			<locationURI>TI_PRODUCTS_DIR/C2000Ware_1_00_01_00/libraries/dsp/FPU/c28/source/fft</locationURI>
-		</link>
-		<link>
-			<name>f2837xd_libraries_fpu_filter</name>
-			<type>2</type>
-			<locationURI>TI_PRODUCTS_DIR/C2000Ware_1_00_01_00/libraries/dsp/FPU/c28/source/filter</locationURI>
+			<locationURI>TI_PRODUCTS_DIR/C2000Ware_1_00_02_00_Software/device_support/f2837xd/headers/source</locationURI>
 		</link>
 		<link>
 			<name>f2837xd_libraries_fpu_utility</name>
 			<type>2</type>
-			<locationURI>TI_PRODUCTS_DIR/C2000Ware_1_00_01_00/libraries/dsp/FPU/c28/source/utility</locationURI>
-		</link>
-		<link>
-			<name>f2837xd_libraries_fpu_vector</name>
-			<type>2</type>
-			<locationURI>TI_PRODUCTS_DIR/C2000Ware_1_00_01_00/libraries/dsp/FPU/c28/source/vector</locationURI>
+			<locationURI>TI_PRODUCTS_DIR/C2000Ware_1_00_02_00_Software/libraries/dsp/FPU/c28/source/utility</locationURI>
 		</link>
 		<link>
 			<name>f2837xd_libraries_vcu2_fft</name>
 			<type>2</type>
-			<locationURI>TI_PRODUCTS_DIR/C2000Ware_1_00_01_00/libraries/dsp/VCU/c28/source/vcu2/fft</locationURI>
-		</link>
-		<link>
-			<name>f2837xd_libraries_vcu_cmd</name>
-			<type>2</type>
-			<locationURI>TI_PRODUCTS_DIR/C2000Ware_1_00_01_00/libraries/dsp/VCU/c28/cmd</locationURI>
+			<locationURI>TI_PRODUCTS_DIR/C2000Ware_1_00_02_00_Software/libraries/dsp/VCU/c28/source/vcu2/fft</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>
